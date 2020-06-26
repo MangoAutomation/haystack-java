@@ -7,34 +7,38 @@
 //
 package org.projecthaystack;
 
-import static org.testng.Assert.*;
-
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import static org.testng.Assert.assertEquals;
 
 import java.util.TimeZone;
+
+import org.testng.annotations.Test;
 
 
 public class HTzTest
 {
-  @Test
-  public void testTz()
-  {
-    verifyTz("New_York", "America/New_York");
-    verifyTz("Chicago",  "America/Chicago");
-    verifyTz("Phoenix",  "America/Phoenix");
-    verifyTz("London",   "Europe/London");
-    verifyTz("UTC",      "Etc/UTC");
-    verifyTz("GMT",      "Etc/GMT");
-    verifyTz("Rel",      "GMT");
-  }
+    @Test
+    public void testTz()
+    {
+        verifyTz("New_York", "America/New_York");
+        verifyTz("Chicago",  "America/Chicago");
+        verifyTz("Phoenix",  "America/Phoenix");
+        verifyTz("London",   "Europe/London");
+        verifyTz("UTC",      "Etc/UTC");
+        verifyTz("GMT",      "Etc/GMT");
+        verifyTz("Rel",      "GMT");
+    }
 
-  private void verifyTz(String name, String javaId)
-  {
-    HTimeZone tz = HTimeZone.make(name);
-    TimeZone java = TimeZone.getTimeZone(javaId);
-    assertEquals(tz.name, name);
-    assertEquals(tz.java, java);
-    assertEquals(tz, HTimeZone.make(java));
-  }
+    private void verifyTz(String name, String javaId)
+    {
+        HTimeZone tz = HTimeZone.make(name);
+        TimeZone java = TimeZone.getTimeZone(javaId);
+        assertEquals(tz.name, name);
+        assertEquals(tz.java, java);
+        assertEquals(tz, HTimeZone.make(java));
+    }
+
+    @Test
+    public void testJavaUTC() {
+        HTimeZone.make(TimeZone.getTimeZone("UTC"), true);
+    }
 }
