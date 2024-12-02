@@ -58,6 +58,7 @@ public class HZincWriter extends HGridWriter
     HZincWriter w = new HZincWriter(out);
     w.version = version;
     w.writeGrid(grid);
+
     return out.toString();
   }
 
@@ -137,9 +138,9 @@ public class HZincWriter extends HGridWriter
     if (val == null) p('N');
     else if (val instanceof HBin) writeBin((HBin)val);
     else if (val instanceof HXStr) writeXStr((HXStr)val);
+    else if (val instanceof HSymbol) writeSymbol((HSymbol)val);
     else p(val.toZinc());
   }
-
 
   private void writeBin(HBin bin)
   {
@@ -158,7 +159,12 @@ public class HZincWriter extends HGridWriter
   {
     if (this.version < 3) throw new RuntimeException("XStr not supported for version: " + this.version);
     p(xstr.toZinc());
+  }
 
+  private void writeSymbol(HSymbol symbol)
+  {
+    if (this.version < 3) throw new RuntimeException("Symbol not supported for version: " + this.version);
+    p(symbol.toZinc());
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -168,30 +174,38 @@ public class HZincWriter extends HGridWriter
   /** Write a grid */
   public void writeGrid(HGrid grid)
   {
-    // meta
-    p("ver:\"").p(version).p(".0\"").writeMeta(grid.meta()).nl();
+    ++gridDepth;
+    try
+    {
+      // meta
+      p("ver:\"").p(version).p(".0\"").writeMeta(grid.meta()).nl();
 
-    // cols
-    if (grid.numCols() == 0)
-    {
-      // technically this shoudl be illegal, but
-      // for robustness handle it here
-    }
-    else
-    {
-      for (int i = 0; i < grid.numCols(); ++i)
+      // cols
+      if (grid.numCols() == 0)
       {
-        if (i > 0) p(',');
-        writeCol(grid.col(i));
+        // technically this shoudl be illegal, but
+        // for robustness handle it here
+      }
+      else
+      {
+        for (int i = 0; i < grid.numCols(); ++i)
+        {
+          if (i > 0) p(',');
+          writeCol(grid.col(i));
+        }
+      }
+      nl();
+
+      // rows
+      for (int i = 0; i < grid.numRows(); ++i)
+      {
+        writeRow(grid, grid.row(i));
+        nl();
       }
     }
-    nl();
-
-    // rows
-    for (int i=0; i<grid.numRows(); ++i)
+    finally
     {
-      writeRow(grid, grid.row(i));
-      nl();
+      --gridDepth;
     }
   }
 
@@ -239,7 +253,7 @@ public class HZincWriter extends HGridWriter
       }
       else
       {
-        out.write(val.toZinc());
+        writeVal(val);
       }
     }
   }
